@@ -1,9 +1,9 @@
-### 网络爬虫之用户名密码及验证码登陆：爬取[知乎](http://www.zhihu.com/)网站 
+### Web crawler username and password and verification code login: Crawl [Know] (http://www.zhihu.com/) website
 
-**一些说明：** 
+** Some notes: **
 
-* 使用requests包来爬取。首先尝试用用户名密码自动登陆，如果失败，则需要采用cookie登陆。  
+* Use the requests package to crawl. First try to log in automatically with the username and password. If it fails, you need to use a cookie to log in.
 
-* 配置文件config.ini，其中包括用户名密码信息，如果有验证码情况，需要手动登陆一次网站获取cookie信息。  
+* The configuration file config.ini, which includes the username and password information. If there is a verification code, you need to manually log in to the website to obtain the cookie information.
 
-* 判断登陆成功与否，看生成的html文件中有没有用户信息。
+* Determine whether the login is successful or not, and see if there is any user information in the generated html file.
