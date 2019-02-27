@@ -36,35 +36,35 @@ class WallstreetcnSave implements Runnable {
 	private static final String REGEXSTRING2 = "content";
 	private static final String REGEXSTRING3 = "categoryset";
 	
-	//map表的存放
+	/ / Map table storage
 	public static Map<String, String> GetMap() {
 		Map<String, String> map = new HashMap<String, String>();
-		map.put("1", "外汇");
-		map.put("2", "股市");
-		map.put("3", "商品");
-		map.put("4", "债市");
-		map.put("9", "中国");
-		map.put("10", "美国");
-		map.put("11", "欧元区");
-		map.put("12", "日本");
-		map.put("13", "英国");
-		map.put("14", "澳洲");
-		map.put("15", "加拿大");
-		map.put("16", "瑞士");
-		map.put("17", "其他地区");
-		map.put("5", "央行");
+		map.put("1", "Forex");
+		map.put("2", "Stock Market");
+		map.put("3", "item");
+		map.put("4", "bond market");
+		map.put("9", "China");
+		map.put("10", "United States");
+		map.put("11", "Eurozone");
+		map.put("12", "Japan");
+		map.put("13", "United Kingdom");
+		map.put("14", "Australia");
+		map.put("15", "Canada");
+		map.put("16", "Switzerland");
+		map.put("17", "Other Areas");
+		map.put("5", "Central Bank");
 		return map;
 	}
 	private static String[] ruleList_district = { "9", "10", "11", "12", "13", "14", "15", "16", "17" };
 	private static String[] ruleList_property = { "1", "2", "3", "4" };
 	private static String[] ruleList_centralbank = { "5" };
 	
-	//对x,x,x格式的内容进行分隔筛选
+	// Separate and filter content in x, x, x format
 	public static String setCategory(String categorySet, String[] ruleList, Map<String, String> map) {
 		StringBuffer disStr = new StringBuffer(); 
 		String[] strArray = null;
-		strArray = categorySet.split(","); // 拆分字符为",",然后把结果交给数组strArray
-		// 获取需要的信息
+		strArray = categorySet.split(","); // split the character to "," and then pass the result to the array strArray
+		// Get the information you need
 		int length_strArray = strArray.length;
 		int length_ruleList = ruleList.length;
 		
@@ -86,7 +86,7 @@ class WallstreetcnSave implements Runnable {
 			return disStr.toString();
 		}
 	
-	//读取整个页面，返回html字符串
+	// read the entire page, return the html string
 	private static String httpRequest(String requestUrl) {
 		StringBuffer buffer = null;
 		BufferedReader bufferedReader = null;
@@ -94,16 +94,16 @@ class WallstreetcnSave implements Runnable {
 		InputStream inputStream = null;
 		HttpURLConnection httpUrlConn = null;
 		try {
-			// 建立get请求
+			// Create a get request
 			URL url = new URL(requestUrl);
 			httpUrlConn = (HttpURLConnection) url.openConnection();
 			httpUrlConn.setDoInput(true);
 			httpUrlConn.setRequestMethod("GET");
-			// 获取输入流
+			// Get the input stream
 			inputStream = httpUrlConn.getInputStream();
 			inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
 			bufferedReader = new BufferedReader(inputStreamReader);
-			// 从输入流获取结果
+			// Get results from the input stream
 			buffer = new StringBuffer();
 			String str = null;
 			while ((str = bufferedReader.readLine()) != null) {
@@ -141,15 +141,15 @@ class WallstreetcnSave implements Runnable {
 		return buffer.toString();
 	}
 
-	// 过滤掉无用的信息
+	// Filter out useless information
 	public static List<Map<String, String>> htmlFiter(String html, String Regex) {
 		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-		// 查找目标
+		// find the target
 		Pattern p = Pattern.compile(Regex);
 		Matcher m = p.matcher(html);
 		while (m.find()) {
 			Map<String, String> map_save = new HashMap<String, String>();
-			// 可修改部分
+			// modifiable part
 			map_save.put(REGEXSTRING1, m.group(1));
 			map_save.put(REGEXSTRING2, m.group(2));
 			map_save.put(REGEXSTRING3, m.group(3));
@@ -159,27 +159,27 @@ class WallstreetcnSave implements Runnable {
 		return list;
 	}
 	
-	//unicode格式转中文
+	// unicode format to Chinese
 	public static String UnicodeToString(String str) {
-			Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))"); // XDigit表示16进制数字，正则里的\p表示Unicode块
+			Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))"); // XDigit represents a hexadecimal number, and \p in the regular expression represents a Unicode block.
 			Matcher matcher = pattern.matcher(str);
 			char ch;
 			while (matcher.find()) {
-				ch = (char) Integer.parseInt(matcher.group(2), 16); // 16进制转10进制作为ascii码，再char转为字符
+				ch = (char) Integer.parseInt(matcher.group(2), 16); // hexadecimal to decimal as ascii code, then char to character
 				str = str.replace(matcher.group(1), ch + "");
 			}
 			return str;
 		}
 	
 	public void run() {
-		while(true) { // 循环体！！！
-			// 链接数据库
+		while(true) { // Loop body! ! !
+			// Connect to the database
 			try {
 				Mongo mongo = new Mongo("localhost", 27017);
 				DB db = mongo.getDB(DataBaseName);
 				DBCollection collection = db.getCollection(CollectionName);
 				
-				// 调用抓取的方法获取内容
+				// Call the method of grabbing to get content
 				String requestUrl = this.release.GetMethod();
 				if(requestUrl.equals("")) {
 					break;
@@ -210,13 +210,13 @@ class WallstreetcnSave implements Runnable {
 							
 							String source = "wangstreetcn";
 		
-							dbObject.put("content", content);       // 具体内容
-							dbObject.put("createdtime", time_str);   // 创建时间
-							dbObject.put("source", source);          // 信息来源
-							dbObject.put("district", district);      // 所属地区
-							dbObject.put("property", property);      // 资产类别
-							dbObject.put("centralbank", centralbank); // 资产类别
-							dbObject.put("type", type); //信息类型
+							dbObject.put("content", content); // specific contents
+							dbObject.put("createdtime", time_str); // create time
+							dbObject.put("source", source); // Information source
+							dbObject.put("district", district); // region
+							dbObject.put("property", property); // asset class
+							dbObject.put("centralbank", centralbank); // asset class
+							dbObject.put("type", type); //Information type
 							
 							collection.insert(dbObject);
 						}
@@ -229,14 +229,14 @@ class WallstreetcnSave implements Runnable {
 	}
 
 	public void run1() {
-		while(true) { // 循环体！！！
-			// 链接数据库
+		while(true) { // Loop body! ! !
+			// Connect to the database
 			try {
 				Mongo mongo = new Mongo("localhost", 27017);
 				DB db = mongo.getDB(DataBaseName);
 				DBCollection collection = db.getCollection(CollectionName);
 				
-				// 调用抓取的方法获取内容
+				// Call the method of grabbing to get content
 				String requestUrl = this.release.GetMethod();
 				if(requestUrl.equals("")) {
 					break;
@@ -267,13 +267,13 @@ class WallstreetcnSave implements Runnable {
 							
 							String source = "wangstreetcn";
 		
-							dbObject.put("content", content);       // 具体内容
-							dbObject.put("createdtime", time_str);   // 创建时间
-							dbObject.put("source", source);          // 信息来源
-							dbObject.put("district", district);      // 所属地区
-							dbObject.put("property", property);      // 资产类别
-							dbObject.put("centralbank", centralbank); // 资产类别
-							dbObject.put("type", type); //信息类型
+							dbObject.put("content", content); // specific contents
+							dbObject.put("createdtime", time_str); // create time
+							dbObject.put("source", source); // Information source
+							dbObject.put("district", district); // region
+							dbObject.put("property", property); // asset class
+							dbObject.put("centralbank", centralbank); // asset class
+							dbObject.put("type", type); //Information type
 							
 							collection.insert(dbObject);
 						}
@@ -309,7 +309,7 @@ class GetrequestUrl {
 	/**
 	 * Thread safe method
 	 */
-	public synchronized String GetMethod() // 利用synchronized修饰符同步了整个方法
+	public synchronized String GetMethod() // Synchronize the entire method with the synchronized modifier
 	{
 		if(this.start <= this.end) {
 			String requestUrl = this.url+this.start;
@@ -325,7 +325,7 @@ class GetrequestUrl {
 
 public class WallstreetcnSaveTest {
 	public static void main(String[] args) {		
-		// 多线程抓取
+		// multi-threaded crawling
 		int start = 1;
 		GetrequestUrl url = new GetrequestUrl(start);
 //		int start = 1, end = 3000;
