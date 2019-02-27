@@ -1,9 +1,9 @@
-### 网络爬虫之最基本的爬虫：爬取[网易新闻排行榜](http://news.163.com/rank/)
+### The most basic crawler of web crawlers: Crawl [Netease News Ranking] (http://news.163.com/rank/)
 
-**一些说明：** 
+** Some notes: **
 
-* 使用urllib2或requests包来爬取页面。
+* Use the urllib2 or requests package to crawl the page.
 
-* 使用正则表达式分析一级页面，使用Xpath来分析二级页面。
+* Analyze first-level pages using regular expressions and Xage to analyze secondary pages.
 
-* 将得到的标题和链接，保存为本地文件。
+* Save the resulting title and link as a local file.
