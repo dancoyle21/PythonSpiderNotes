@@ -1,11 +1,11 @@
-### 使用Scrapy或Requests递归抓取[微信搜索](http://weixin.sogou.com/weixin)结果
+### Use Scrapy or Requests to recursively grab [WeChat Search] (http://weixin.sogou.com/weixin) results
 
-使用Scrapy方法 或者 使用Requests+BeautifulSoup
+Use the Scrapy method or use Requests+BeautifulSoup
 
-**使用Scrapy方法：**  
+**Use the Scrapy method: **
 
-* 将querystring替换为你要查询的单词
+* Replace the querystring with the word you want to query
 
-* type可以选择
+* type can choose
 
-* i的范围可以调整，对应查询的搜索结果页面数目  
+* The range of i can be adjusted, the number of search results pages corresponding to the query
