@@ -1,7 +1,7 @@
 ### Spider_Java
 
-抓取网址：[华尔街见闻](http://live.wallstreetcn.com/)
+Crawl URL: [Wall Street See] (http://live.wallstreetcn.com/)
 
-单线程抓取 Spider_Java1
+Single-threaded crawling Spider_Java1
 
-多线程抓取 Spider_Java2
+Multithreaded crawling Spider_Java2
