@@ -1,9 +1,9 @@
-### 网络爬虫之Selenium使用代理登陆：爬取[去哪儿](http://flight.qunar.com/)网站 
+### Web crawler Selenium uses proxy login: Crawl [where to go] (http://flight.qunar.com/) website
 
-**一些说明：**
+** Some notes: **
 
-* 使用selenium模拟浏览器登陆，获取翻页操作。
+* Log in using the selenium emulation browser to get a page flip.
 
-* 代理可以存入一个文件，程序读取并使用。
+* The agent can save a file, the program reads and uses.
 
-* 支持多进程抓取。
+* Support multi-process crawling.
