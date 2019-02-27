@@ -1,301 +1,305 @@
-# [Python入门网络爬虫之精华版](https://github.com/lining0806/PythonSpiderNotes)
+# [Python Getting Started Web Crawler Essentials] (https://github.com/lining0806/PythonSpiderNotes)
 
-*** 
-
-Python学习网络爬虫主要分3个大的版块：**抓取**，**分析**，**存储**  
-
-另外，比较常用的爬虫框架[Scrapy](http://scrapy.org/)，这里最后也详细介绍一下。    
-
-首先列举一下本人总结的相关文章，这些覆盖了入门网络爬虫需要的基本概念和技巧：[宁哥的小站-网络爬虫](http://www.lining0806.com/category/spider/)  
 ***
 
-当我们在浏览器中输入一个url后回车，后台会发生什么？比如说你输入[http://www.lining0806.com/](http://www.lining0806.com/)，你就会看到宁哥的小站首页。
+Python learning web crawlers are divided into 3 major sections: **crawl**,**analysis**,**store**
 
-简单来说这段过程发生了以下四个步骤：
+In addition, the more commonly used crawler framework [Scrapy] (http://scrapy.org/), here is also a detailed description.
 
-* 查找域名对应的IP地址。
-* 向IP对应的服务器发送请求。
-* 服务器响应请求，发回网页内容。
-* 浏览器解析网页内容。
+First, I will list some related articles that I have summarized. These cover the basic concepts and skills needed to get started with web crawlers: [Ningge's Station - Web Crawler] (http://www.lining0806.com/category/spider/)
+***
 
-网络爬虫要做的，简单来说，就是实现浏览器的功能。通过指定url，直接返回给用户所需要的数据，而不需要一步步人工去操纵浏览器获取。
+When we enter a url in the browser and press Enter, what happens in the background? For example, if you enter [http://www.lining0806.com/] (http://www.lining0806.com/), you will see Ning Ge's small station home page.
 
-## 抓取  
-这一步，你要明确要得到的内容是什么？是HTML源码，还是Json格式的字符串等。  
+Simply put, the following four steps occur in this process:
 
-#### 1. 最基本的抓取  
+* Find the IP address corresponding to the domain name.
+* Send a request to the server corresponding to the IP.
+* The server responds to the request and sends back the content of the web page.
+* The browser parses the content of the web page.
 
-抓取大多数情况属于get请求，即直接从对方服务器上获取数据。  
+The web crawler has to do, in simple terms, to implement the browser's functionality. By specifying the url, the data needed by the user is directly returned, without the need to manually manipulate the browser to obtain it.
 
-首先，Python中自带urllib及urllib2这两个模块，基本上能满足一般的页面抓取。另外，[requests](https://github.com/kennethreitz/requests)也是非常有用的包，与此类似的，还有[httplib2](https://github.com/jcgregorio/httplib2)等等。    
+## Grab
+In this step, what do you want to know clearly? Is the HTML source code, or the Json format string.
 
-```
-Requests：
-	import requests
-	response = requests.get(url)
-	content = requests.get(url).content
-	print "response headers:", response.headers
-	print "content:", content
-Urllib2：
-	import urllib2
-	response = urllib2.urlopen(url)
-	content = urllib2.urlopen(url).read()
-	print "response headers:", response.headers
-	print "content:", content
-Httplib2：
-	import httplib2
-	http = httplib2.Http()
-	response_headers, content = http.request(url, 'GET')
-	print "response headers:", response_headers
-	print "content:", content
-```  
+#### 1. The most basic crawl
 
-此外，对于带有查询字段的url，get请求一般会将来请求的数据附在url之后，以?分割url和传输数据，多个参数用&连接。  
+Grab most cases as get requests, that is, get data directly from the other server.
+
+First of all, Python comes with two modules, urllib and urllib2, which basically satisfy the general page crawling. In addition, [requests] (https://github.com/kennethreitz/requests) is also a very useful package, similar to [httplib2] (https://github.com/jcgregorio/httplib2) and so on.
 
 ```
-data = {'data1':'XXXXX', 'data2':'XXXXX'}
-Requests：data为dict，json
-	import requests
-	response = requests.get(url=url, params=data)
-Urllib2：data为string
-	import urllib, urllib2    
-	data = urllib.urlencode(data)
-	full_url = url+'?'+data
-	response = urllib2.urlopen(full_url)
+Requests:
+Import requests
+Response = requests.get(url)
+Content = requests.get(url).content
+Print "response headers:", response.headers
+Print "content:", content
+Urllib2:
+Import urllib2
+Response = urllib2.urlopen(url)
+Content = urllib2.urlopen(url).read()
+Print "response headers:", response.headers
+Print "content:", content
+Httplib2:
+Import httplib2
+Http = httplib2.Http()
+Response_headers, content = http.request(url, 'GET')
+Print "response headers:", response_headers
+Print "content:", content
 ```
 
-相关参考：[网易新闻排行榜抓取回顾](http://www.lining0806.com/%E7%BD%91%E6%98%93%E6%96%B0%E9%97%BB%E6%8E%92%E8%A1%8C%E6%A6%9C%E6%8A%93%E5%8F%96%E5%9B%9E%E9%A1%BE/)
-
-参考项目：[网络爬虫之最基本的爬虫：爬取网易新闻排行榜](https://github.com/lining0806/PythonSpiderNotes/blob/master/NewsSpider)
-
-### 2. 对于登陆情况的处理  
-
-**2.1 使用表单登陆**  
-
-这种情况属于post请求，即先向服务器发送表单数据，服务器再将返回的cookie存入本地。  
+In addition, for a url with a query field, the get request will generally attach the requested data to the url, to split the url and transfer the data, and multiple parameters are connected with &.
 
 ```
-data = {'data1':'XXXXX', 'data2':'XXXXX'}
-Requests：data为dict，json
-	import requests
-	response = requests.post(url=url, data=data)
-Urllib2：data为string
-	import urllib, urllib2    
-	data = urllib.urlencode(data)
-	req = urllib2.Request(url=url, data=data)
-	response = urllib2.urlopen(req)
-```  
-
-**2.2 使用cookie登陆**  
-
-使用cookie登陆，服务器会认为你是一个已登陆的用户，所以就会返回给你一个已登陆的内容。因此，需要验证码的情况可以使用带验证码登陆的cookie解决。  
-
-```
-import requests			
-requests_session = requests.session() 
-response = requests_session.post(url=url_login, data=data) 
+Data = {'data1':'XXXXX', 'data2':'XXXXX'}
+Requests: data is dict, json
+Import requests
+Response = requests.get(url=url, params=data)
+Urllib2:data is a string
+Import urllib, urllib2
+Data = urllib.urlencode(data)
+Full_url = url+'?'+data
+Response = urllib2.urlopen(full_url)
 ```
 
-若存在验证码，此时采用response = requests_session.post(url=url_login, data=data)是不行的，做法应该如下：  
+Related reference: [Netease News Rankings Grab Review] (http://www.lining0806.com/%E7%BD%91%E6%98%93%E6%96%B0%E9%97%BB%E6% 8E%92%E8%A1%8C%E6%A6%9C%E6%8A%93%E5%8F%96%E5%9B%9E%E9%A1%BE/)
+
+Reference Project: [The most basic crawler for web crawlers: Crawl Netease News Leaderboard] (https://github.com/lining0806/PythonSpiderNotes/blob/master/NewsSpider)
+
+### 2. Dealing with the login situation
+
+**2.1 Login using form**
+
+This situation is a post request, that is, the form data is sent to the server first, and the server stores the returned cookie locally.
 
 ```
-response_captcha = requests_session.get(url=url_login, cookies=cookies)
-response1 = requests.get(url_login) # 未登陆
-response2 = requests_session.get(url_login) # 已登陆，因为之前拿到了Response Cookie！
-response3 = requests_session.get(url_results) # 已登陆，因为之前拿到了Response Cookie！
+Data = {'data1':'XXXXX', 'data2':'XXXXX'}
+Requests: data is dict, json
+Import requests
+Response = requests.post(url=url, data=data)
+Urllib2:data is a string
+Import urllib, urllib2
+Data = urllib.urlencode(data)
+Req = urllib2.Request(url=url, data=data)
+Response = urllib2.urlopen(req)
 ```
 
-相关参考：[网络爬虫-验证码登陆](http://www.lining0806.com/6-%E7%BD%91%E7%BB%9C%E7%88%AC%E8%99%AB-%E9%AA%8C%E8%AF%81%E7%A0%81%E7%99%BB%E9%99%86/)  
+**2.2 Login using cookies**
 
-参考项目：[网络爬虫之用户名密码及验证码登陆：爬取知乎网站](https://github.com/lining0806/PythonSpiderNotes/blob/master/ZhihuSpider)  
-
-### 3. 对于反爬虫机制的处理 
-
-**3.1 使用代理** 
-
-适用情况：限制IP地址情况，也可解决由于“频繁点击”而需要输入验证码登陆的情况。  
-
-这种情况最好的办法就是维护一个代理IP池，网上有很多免费的代理IP，良莠不齐，可以通过筛选找到能用的。对于“频繁点击”的情况，我们还可以通过限制爬虫访问网站的频率来避免被网站禁掉。
+Login with a cookie, the server will think that you are a logged-in user, so it will return you a logged-in content. Therefore, the case where a verification code is required can be solved using a cookie with a verification code login.
 
 ```
-proxies = {'http':'http://XX.XX.XX.XX:XXXX'}
-Requests：
-	import requests
-	response = requests.get(url=url, proxies=proxies)
-Urllib2：
-	import urllib2
-	proxy_support = urllib2.ProxyHandler(proxies)
-	opener = urllib2.build_opener(proxy_support, urllib2.HTTPHandler)
-	urllib2.install_opener(opener) # 安装opener，此后调用urlopen()时都会使用安装过的opener对象
-	response = urllib2.urlopen(url)
+Import requests
+Requests_session = requests.session()
+Response = requests_session.post(url=url_login, data=data)
 ```
 
-**3.2 时间设置** 
-
-适用情况：限制频率情况。 
-
-Requests，Urllib2都可以使用time库的sleep()函数：
+If there is a verification code, it is not acceptable to use response = requests_session.post(url=url_login, data=data). The practice should be as follows:
 
 ```
-import time
-time.sleep(1)
+Response_captcha = requests_session.get(url=url_login, cookies=cookies)
+Response1 = requests.get(url_login) # not logged in
+Response2 = requests_session.get(url_login) # logged in, because I got the Response Cookie!
+Response3 = requests_session.get(url_results) # logged in, because I got the Response Cookie!
 ```
 
-**3.3 伪装成浏览器，或者反“反盗链”**  
+Related reference: [Web crawler - verification code login] (http://www.lining0806.com/6-%E7%BD%91%E7%BB%9C%E7%88%AC%E8%99%AB-% E9%AA%8C%E8%AF%81%E7%A0%81%E7%99%BB%E9%99%86/)
 
-有些网站会检查你是不是真的浏览器访问，还是机器自动访问的。这种情况，加上User-Agent，表明你是浏览器访问即可。有时还会检查是否带Referer信息还会检查你的Referer是否合法，一般再加上Referer。
+Reference project: [Web crawler username and password and verification code login: Crawl to know the website] (https://github.com/lining0806/PythonSpiderNotes/blob/master/ZhihuSpider)
 
-```
-headers = {'User-Agent':'XXXXX'} # 伪装成浏览器访问，适用于拒绝爬虫的网站
-headers = {'Referer':'XXXXX'}
-headers = {'User-Agent':'XXXXX', 'Referer':'XXXXX'}
-Requests：
-	response = requests.get(url=url, headers=headers)
-Urllib2：
-	import urllib, urllib2   
-	req = urllib2.Request(url=url, headers=headers)
-	response = urllib2.urlopen(req)
-```
+### 3. Treatment of anti-reptile mechanism
 
-### 4. 对于断线重连  
+**3.1 Using a proxy**
 
-不多说。
+Applicable situation: Restricting the IP address, it can also solve the problem that you need to enter the verification code to log in due to "frequent clicks".
+
+The best way to do this is to maintain a proxy IP pool. There are a lot of free proxy IPs on the Internet, which are not good enough. You can find out what can be used by filtering. For "frequent clicks", we can also avoid being banned by the site by limiting the frequency with which crawlers visit the site.
 
 ```
-def multi_session(session, *arg):
-	retryTimes = 20
-	while retryTimes>0:
-		try:
-			return session.post(*arg)
-		except:
-			print '.',
-			retryTimes -= 1
+Proxies = {'http': 'http://XX.XX.XX.XX:XXXX'}
+Requests:
+Import requests
+Response = requests.get(url=url, proxies=proxies)
+Urllib2:
+Import urllib2
+Proxy_support = urllib2.ProxyHandler(proxies)
+Opener = urllib2.build_opener(proxy_support, urllib2.HTTPHandler)
+Urllib2.install_opener(opener) # Install opener, then use urlopen() to use the installed opener object
+Response = urllib2.urlopen(url)
 ```
 
-或者  
+**3.2 Time setting**
+
+Applicable conditions: Limit the frequency.
+
+Requests, Urllib2 can use the sleep() function of the time library:
 
 ```
-def multi_open(opener, *arg):
-	retryTimes = 20
-	while retryTimes>0:
-		try:
-			return opener.open(*arg)
-		except:
-			print '.',
-			retryTimes -= 1
+Import time
+Time.sleep(1)
 ```
 
-这样我们就可以使用multi_session或multi_open对爬虫抓取的session或opener进行保持。    
+**3.3 Disguised as a browser, or anti-theft chain
 
-### 5. 多进程抓取  
+Some websites will check if you are actually accessing the browser or if the machine is automatically accessed. In this case, plus User-Agent, you are allowed to access the browser. Sometimes it will check if the Referer information is also checked if your Referer is legal, usually with Referer.
 
-这里针对[华尔街见闻](http://live.wallstreetcn.com/ )进行并行抓取的实验对比：[Python多进程抓取](https://github.com/lining0806/PythonSpiderNotes/blob/master/Spider_Python) 与 [Java单线程和多线程抓取](https://github.com/lining0806/PythonSpiderNotes/blob/master/Spider_Java)  
+```
+Headers = {'User-Agent':'XXXXX'} # Disguised as a browser access, suitable for sites that refuse crawlers
+Headers = {'Referer':'XXXXX'}
+Headers = {'User-Agent': 'XXXXX', 'Referer': 'XXXXX'}
+Requests:
+Response = requests.get(url=url, headers=headers)
+Urllib2:
+Import urllib, urllib2
+Req = urllib2.Request(url=url, headers=headers)
+Response = urllib2.urlopen(req)
+```
 
-相关参考：[关于Python和Java的多进程多线程计算方法对比](http://www.lining0806.com/%E5%85%B3%E4%BA%8Epython%E5%92%8Cjava%E7%9A%84%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95%E5%AF%B9%E6%AF%94/)  
+### 4. Reconnect for disconnection
 
-### 6. 对于Ajax请求的处理  
+Not much to say.
 
-对于“加载更多”情况，使用Ajax来传输很多数据。
+```
+Def multi_session(session, *arg):
+retryTimes = 20
+While retryTimes>0:
+Try:
+Return session.post(*arg)
+Except:
+Print '.',
+retryTimes -= 1
+```
 
-它的工作原理是：从网页的url加载网页的源代码之后，会在浏览器里执行JavaScript程序。这些程序会加载更多的内容，“填充”到网页里。这就是为什么如果你直接去爬网页本身的url，你会找不到页面的实际内容。  
+Or
 
-这里，若使用Google Chrome分析”请求“对应的链接(方法：右键→审查元素→Network→清空，点击”加载更多“，出现对应的GET链接寻找Type为text/html的，点击，查看get参数或者复制Request URL)，循环过程。  
+```
+Def multi_open(opener, *arg):
+retryTimes = 20
+While retryTimes>0:
+Try:
+Return opener.open(*arg)
+Except:
+Print '.',
+retryTimes -= 1
+```
 
-* 如果“请求”之前有页面，依据上一步的网址进行分析推导第1页。以此类推，抓取抓Ajax地址的数据。  
-* 对返回的json格式数据(str)进行正则匹配。json格式数据中，需从'\\uxxxx'形式的unicode_escape编码转换成u'\uxxxx'的unicode编码。  
+This way we can use multi_session or multi_open to keep the session or opener crawled by the crawler.
 
-### 7. 自动化测试工具Selenium
+### 5. Multi-process crawling
 
-Selenium是一款自动化测试工具。它能实现操纵浏览器，包括字符填充、鼠标点击、获取元素、页面切换等一系列操作。总之，凡是浏览器能做的事，Selenium都能够做到。
+Here's an experimental comparison of [Wall Street Insights] (http://live.wallstreetcn.com/) for parallel crawling: [Python Multi-Process Crawl] (https://github.com/lining0806/PythonSpiderNotes/blob/master/ Spider_Python) and [Java single-threaded and multi-threaded crawling] (https://github.com/lining0806/PythonSpiderNotes/blob/master/Spider_Java)
 
-这里列出在给定城市列表后，使用selenium来动态抓取[去哪儿网](http://flight.qunar.com/)的票价信息的代码。
+Related reference: [Comparison of multi-process multi-threaded computing methods for Python and Java] (http://www.lining0806.com/%E5%85%B3%E4%BA%8Epython%E5%92%8Cjava%E7%9A %84%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%AE%A1%E7%AE%97 %E6%96%B9%E6%B3%95%E5%AF%B9%E6%AF%94/)
 
-参考项目：[网络爬虫之Selenium使用代理登陆：爬取去哪儿网站](https://github.com/lining0806/PythonSpiderNotes/blob/master/QunarSpider) 
+### 6. Processing of Ajax requests
 
-### 8. 验证码识别  
+For the "load more" case, Ajax is used to transfer a lot of data.
 
-对于网站有验证码的情况，我们有三种办法：  
+It works by: after loading the source code of the web page from the url of the web page, the JavaScript program is executed in the browser. These programs will load more content and "fill" it into the web page. This is why if you go directly to the url of the page itself, you will not find the actual content of the page.
 
-* 使用代理，更新IP。
-* 使用cookie登陆。
-* 验证码识别。
+Here, if you use Google Chrome to analyze the "request" corresponding link (method: right click → review element → Network → empty, click "load more", the corresponding GET link appears to find Type as text / html, click, view get parameter Or copy the Request URL), the loop process.
 
-使用代理和使用cookie登陆之前已经讲过，下面讲一下验证码识别。  
+* If there is a page before "Request", the first page will be derived based on the analysis of the URL of the previous step. And so on, grab the data of the Ajax address.
+* Regularly match the returned json format data (str). In the json format data, the unicode_escape encoding of the form '\\uxxxx' is converted to the unicode encoding of u'\uxxxx'.
 
-可以利用开源的Tesseract-OCR系统进行验证码图片的下载及识别，将识别的字符传到爬虫系统进行模拟登陆。当然也可以将验证码图片上传到打码平台上进行识别。如果不成功，可以再次更新验证码识别，直到成功为止。  
+### 7. Automated testing tool Selenium
 
-参考项目：[验证码识别项目第一版：Captcha1](https://github.com/lining0806/PythonSpiderNotes/blob/master/Captcha1)
+Selenium is an automated testing tool. It can implement a series of operations such as character padding, mouse clicks, get elements, page switching, etc. In short, Selenium can do whatever the browser can do.
 
-**爬取有两个需要注意的问题：**
+Here is a list of the code for using the selenium to dynamically crawl the fare information of [Zonai] (http://flight.qunar.com/) after a given list of cities.
 
-* 如何监控一系列网站的更新情况，也就是说，如何进行增量式爬取？
-* 对于海量数据，如何实现分布式爬取？
+Reference project: [Web crawler Selenium uses proxy login: crawl to where to go] (https://github.com/lining0806/PythonSpiderNotes/blob/master/QunarSpider)
 
-## 分析  
+### 8. Verification code recognition
 
-抓取之后就是对抓取的内容进行分析，你需要什么内容，就从中提炼出相关的内容来。  
+For the case where the website has a verification code, we have three options:
 
-常见的分析工具有[正则表达式](http://deerchao.net/tutorials/regex/regex.htm)，[BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/)，[lxml](http://lxml.de/)等等。  
+* Use the proxy to update the IP.
+* Log in using cookies.
+* Identification codes.
 
-## 存储  
+I have already talked about using the proxy and logging in with a cookie. Let's talk about the verification code identification.
 
-分析出我们需要的内容之后，接下来就是存储了。  
+The open source Tesseract-OCR system can be used to download and identify the captcha image, and the recognized characters are transmitted to the crawler system for simulated landing. Of course, the verification code picture can also be uploaded to the coding platform for identification. If it is unsuccessful, you can update the verification code identification again until it is successful.
 
-我们可以选择存入文本文件，也可以选择存入[MySQL](http://www.mysql.com/)或[MongoDB](https://www.mongodb.org/)数据库等。  
+Reference project: [Verification Code Recognition Project First Edition: Captcha1] (https://github.com/lining0806/PythonSpiderNotes/blob/master/Captcha1)
 
-**存储有两个需要注意的问题：**
+**Crawling has two issues to be aware of: **
 
-* 如何进行网页去重？
-* 内容以什么形式存储？
+* How to monitor the update of a series of websites, that is, how to carry out incremental crawling?
+* How to implement distributed crawling for massive data?
+
+## Analysis
+
+After the crawl is to analyze the content of the crawl, what content you need, from which to extract the relevant content.
+
+Common analysis tools are [regular expressions] (http://deerchao.net/tutorials/regex/regex.htm), [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/), [lxml ](http://lxml.de/) and so on.
+
+## storage
+
+After analyzing what we need, the next step is to store it.
+
+We can choose to save the text file, or you can choose to save it to [MySQL] (http://www.mysql.com/) or [MongoDB] (https://www.mongodb.org/) database.
+
+**Storage has two issues to be aware of: **
+
+* How to carry out web page weighting?
+* In what form is the content stored?
 
 
-## Scrapy  
+## Scrapy
 
-Scrapy是一个基于Twisted的开源的Python爬虫框架，在工业中应用非常广泛。  
+Scrapy is an open source Python crawler framework based on Twisted and is widely used in industry.
 
-相关内容可以参考[基于Scrapy网络爬虫的搭建](http://www.lining0806.com/%E5%9F%BA%E4%BA%8Escrapy%E7%BD%91%E7%BB%9C%E7%88%AC%E8%99%AB%E7%9A%84%E6%90%AD%E5%BB%BA/)，同时给出这篇文章介绍的[微信搜索](http://weixin.sogou.com/weixin)爬取的项目代码，给大家作为学习参考。
+For related content, please refer to [Building based on Scrapy web crawler] (http://www.lining0806.com/%E5%9F%BA%E4%BA%8Escrapy%E7%BD%91%E7%BB%9C%E7% 88%AC%E8%99%AB%E7%9A%84%E6%90%AD%E5%BB%BA/), also given the [WeChat Search] described in this article (http://weixin.sogou .com/weixin) Climb the project code for everyone to learn as a reference.
 
-参考项目：[使用Scrapy或Requests递归抓取微信搜索结果](https://github.com/lining0806/PythonSpiderNotes/blob/master/WechatSearchProjects)
+Reference project: [Retrieving WeChat search results using Scrapy or Requests recursively] (https://github.com/lining0806/PythonSpiderNotes/blob/master/WechatSearchProjects)
 
-## Robots协议  
+## Robots Agreement
 
-好的网络爬虫，首先需要遵守**Robots协议**。Robots协议（也称为爬虫协议、机器人协议等）的全称是“网络爬虫排除标准”（Robots Exclusion Protocol），网站通过Robots协议告诉搜索引擎哪些页面可以抓取，哪些页面不能抓取。
+A good web crawler, first of all, must comply with the **Robots Agreement**. The full name of the Robots protocol (also known as crawler protocol, robot protocol, etc.) is the "Robots Exclusion Protocol". The website uses the Robots protocol to tell search engines which pages can be crawled and which pages cannot be crawled.
 
-在网站根目录下放一个robots.txt文本文件（如 https://www.taobao.com/robots.txt ），里面可以指定不同的网络爬虫能访问的页面和禁止访问的页面，指定的页面由正则表达式表示。网络爬虫在采集这个网站之前，首先获取到这个robots.txt文本文件，然后解析到其中的规则，然后根据规则来采集网站的数据。
+Place a robots.txt text file (such as https://www.taobao.com/robots.txt) in the root directory of the website, which can specify the pages that different web crawlers can access and the pages that are forbidden to access. The specified pages are regular. Expression representation. Before collecting the website, the web crawler first obtains the text file of the robots.txt, then parses the rules into it, and then collects the data of the website according to the rules.
 
-### 1. Robots协议规则
+### 1. Robots Protocol Rules
 
-	User-agent: 指定对哪些爬虫生效
-	Disallow: 指定不允许访问的网址
-	Allow: 指定允许访问的网址
+User-agent: Specify which crawlers to take effect
+Disallow: Specify a URL that is not allowed to be accessed
+Allow: Specify the URLs that are allowed to be accessed
 
-注意: 一个英文要大写，冒号是英文状态下，冒号后面有一个空格，"/"代表整个网站
+Note: One English should be capitalized, the colon is in English, there is a space after the colon, and "/" stands for the entire site.
 
-### 2. Robots协议举例
+### 2. Robots protocol example
 
-	禁止所有机器人访问
-		User-agent: *
-		Disallow: /
-	允许所有机器人访问
-		User-agent: *
-		Disallow: 
-	禁止特定机器人访问
-		User-agent: BadBot
-		Disallow: /
-	允许特定机器人访问
-		User-agent: GoodBot
-		Disallow: 
-	禁止访问特定目录
-		User-agent: *
-		Disallow: /images/
-	仅允许访问特定目录
-		User-agent: *
-		Allow: /images/
-		Disallow: /
-	禁止访问特定文件
-		User-agent: *
-		Disallow: /*.html$
-	仅允许访问特定文件
-		User-agent: *
-		Allow: /*.html$
-		Disallow: /
+Prohibit all robot access
+User-agent: *
+Disallow: /
+Allow all robots to access
+User-agent: *
+Disallow:
+Prohibit specific robot access
+User-agent: BadBot
+Disallow: /
+Allow specific robot access
+User-agent: GoodBot
+Disallow:
+Block access to specific directories
+User-agent: *
+Disallow: /images/
+Allow access to specific directories only
+User-agent: *
+Allow: /images/
+Disallow: /
+Block access to specific files
+User-agent: *
+Disallow: /*.html$
+Allow access to specific files only
+User-agent: *
+Allow: /*.html$
+Disallow: /
+Send feedback
+History
+Saved
+Community
